@@ -65,21 +65,28 @@ function OooComposer({
       const res = await fetch("/api/away", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ start, end, message, destination }),
+        body: JSON.stringify({
+          action: "send",
+          message,
+          destination,
+          ...(start && end ? { dates: { start, end } } : {}),
+        }),
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok) {
-        setResult({ status: "error", message: data?.error ?? "Could not send the notice" });
-      } else if (data?.demo || data?.status === "demo" || !data?.sent) {
+      // API returns { result: AwayResult } — unwrap (tolerate a bare payload too).
+      const r = data?.result ?? data;
+      if (!res.ok || r?.error) {
+        setResult({ status: "error", message: r?.error ?? "Could not send the notice" });
+      } else if (r?.sent) {
+        setResult({ status: "sent", id: r?.id });
+      } else {
         setResult({
           status: "demo",
           preview: {
-            subject: data?.preview?.subject ?? `Away${destination ? ` — ${destination}` : ""}`,
-            body: data?.preview?.body ?? message,
+            subject: r?.subject ?? `Away${destination ? ` — ${destination}` : ""}`,
+            body: r?.html?.replace(/<[^>]+>/g, "\n").trim() ?? message,
           },
         });
-      } else {
-        setResult({ status: "sent", id: data?.id });
       }
     } catch {
       setResult({ status: "error", message: "Network error — try again" });

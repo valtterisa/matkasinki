@@ -171,17 +171,22 @@ function ChallengeCard({
         body: JSON.stringify({ challengeId: challenge.id, proof }),
       });
       const data = await res.json().catch(() => null);
-      const ok = res.ok && (data?.verified ?? data?.ok ?? true) && !data?.rejected;
+      const v = data?.verdict;
+      const ok = res.ok && v?.verified === true;
       if (ok) {
         setVerdict({
           ok: true,
-          message: data?.message ?? "Verified! Scout report incoming — check your Club!",
+          message: "Verified! Scout report incoming — check your Club!",
         });
       } else {
-        setVerdict({
-          ok: false,
-          message: data?.message ?? data?.error ?? "Not enough proof — verification rejected.",
-        });
+        // Surface the verifier's own audit trail (the "why not") when present.
+        const reason =
+          (Array.isArray(v?.reasons) && v.reasons.length > 0
+            ? v.reasons[v.reasons.length - 1]
+            : undefined) ??
+          data?.error ??
+          "Not enough proof — verification rejected.";
+        setVerdict({ ok: false, message: reason });
       }
     } catch {
       setVerdict({ ok: false, message: "Could not reach the verifier. Try again." });

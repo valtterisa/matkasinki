@@ -25,7 +25,7 @@ export async function sendAwayEmail(args: {
   const where = args.destination ? ` in ${args.destination}` : "";
   const when =
     args.dates?.start && args.dates?.end ? ` from ${args.dates.start} to ${args.dates.end}` : "";
-  const subject = `Out of office${where ? ` —${where.trim()}` : ""}`;
+  const subject = `Out of office${where ? ` — ${where.trim()}` : ""}`;
   const body =
     args.message ||
     `Hi — I'm currently away${where}${when} and offline for most of the day.\n\n` +

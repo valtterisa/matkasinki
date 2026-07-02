@@ -64,7 +64,9 @@ const OUTRO = [
 function seeded(i: number, salt: number, mod: number): number {
   let h = (i * 2654435761 + salt * 40503) >>> 0;
   h ^= h >>> 13;
-  return h % mod;
+  // XOR yields a signed int32 (negative when the high bit is set), which would
+  // produce a negative array index. Force unsigned before the modulo.
+  return (h >>> 0) % mod;
 }
 
 function fill(t: string, slide: BroadcastSlide, meta: BroadcastMeta): string {

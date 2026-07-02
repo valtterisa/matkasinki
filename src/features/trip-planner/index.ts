@@ -31,12 +31,19 @@ const SLOTS: { key: keyof Pick<PlanPack, "morning" | "afternoon" | "evening">; t
   { key: "evening", time: "19:30" },
 ];
 
-/** Deterministic, vibe-biased pick from a pool. `salt` rotates picks for day-swaps. */
+/**
+ * Deterministic, vibe-biased pick from a pool. `salt` rotates picks for day-swaps.
+ * Vibe-preferred items are ordered FIRST, then the rest of the pool — so early
+ * days get on-vibe picks and later days get variety instead of repeats. Advancing
+ * by dayIndex through the full ordered pool guarantees no two days share an item
+ * until the whole pool is exhausted (each slot has its own pool).
+ */
 function pick(pool: PoolItem[], vibe: VibeKey, dayIndex: number, slot: number, salt: number): PoolItem {
   const preferred = pool.filter((p) => p.tags.includes(vibe));
-  const list = preferred.length > 0 ? preferred : pool;
-  const idx = (dayIndex * 3 + slot + salt) % list.length;
-  return list[idx];
+  const rest = pool.filter((p) => !p.tags.includes(vibe));
+  const ordered = [...preferred, ...rest];
+  const idx = (dayIndex + slot * 2 + salt) % ordered.length;
+  return ordered[idx];
 }
 
 function dateList(start: string, end: string): string[] {

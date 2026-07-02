@@ -4,6 +4,13 @@ import { readState, updateState } from "@/lib/store";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+// Read the saved trip (+ profile). Powers the Narrator broadcast, which loads
+// the real itinerary when one has been saved and otherwise shows the sample.
+export async function GET() {
+  const s = readState();
+  return Response.json({ trip: s.trip ?? null, profile: s.profile ?? null });
+}
+
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as Partial<TripPlanInput> & {
     action?: "generate" | "swap" | "save";

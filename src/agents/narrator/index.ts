@@ -44,7 +44,8 @@ export async function generateBroadcastScript(
     const res = await anthropic.messages.create({
       model: MODELS.interactive,
       max_tokens: 1800,
-      temperature: 0.9,
+      // NOTE: no sampling params — claude-sonnet-5 rejects non-default
+      // temperature/top_p/top_k with a 400. Voice is steered via the prompt.
       system:
         "You are a legendary football TV commentator narrating a travel itinerary as if it were a live matchday broadcast. Energetic, warm, witty — Peter Drury meets a travel show. Each line is spoken aloud by text-to-speech, so write flowing spoken prose: no markdown, no emoji, no stage directions.",
       messages: [

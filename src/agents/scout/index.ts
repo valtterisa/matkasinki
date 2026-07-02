@@ -100,7 +100,7 @@ async function discoveryViaWebResearch(
   query: DiscoveryQuery,
 ): Promise<DestinationCandidate[]> {
   const webSearchTool = {
-    type: "web_search_20250305",
+    type: "web_search_20260209",
     name: "web_search",
     max_uses: 10,
   };
@@ -204,7 +204,7 @@ async function scoutLocal(query: unknown): Promise<LocalChallenge[]> {
         max_tokens: 4000,
         system:
           "You are Scout researching real, current local experiences (restaurants, hidden gems, landmarks, local dishes) via web search. Cross-check reviews and safety. Reply with ONLY a JSON array of challenge objects: { id, title, description, category, estCost (USD number), sustainable (boolean), verifyHint, sources (URLs read) }.",
-        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 } as never],
+        tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 6 } as never],
         messages: [
           {
             role: "user",
