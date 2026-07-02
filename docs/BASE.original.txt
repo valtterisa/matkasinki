@@ -1,0 +1,11 @@
+- ONBOARDING: a detailed multiple choice 
+
+- TRIP PLANNER: dates, budget, vibe, detailed and full itinerary
+- OUT-OF-OFFICE: auto-reply, triage, summarise while user is away, demo with Resend
+- ACTIVITY FINDER: weather + location + mood -> plans for the day
+- PACKING LIST: destination + weather + trip type -> what to bring. also update daily
+- READING CURATOR: suggest a reading list from personality test results
+- HOME SITTER: run automation, demo with MCP server
+- BUDGET TRACKER: log expenses, easily convert currencies, track the trip
+- LOCAL GUIDE (IMPORTANT): find restaurants, hidden gems, within budget and come up with challenges
+- Challenges done and places visited add to resources that build user's own football team
