@@ -16,6 +16,7 @@ interface DayItem {
 }
 interface PlanDay {
   day?: number;
+  date?: string;
   theme?: string;
   title?: string;
   items?: DayItem[];
@@ -47,6 +48,7 @@ function toDays(data: unknown): PlanDay[] {
     .filter((d) => d && typeof d === "object")
     .map((d, i) => ({
       day: typeof d.day === "number" ? d.day : i + 1,
+      date: typeof d.date === "string" ? d.date : undefined,
       theme: d.theme ?? d.title,
       items: Array.isArray(d.items)
         ? d.items.filter((it) => it && typeof it === "object")
@@ -65,6 +67,7 @@ function PlanInner() {
   const [days, setDays] = useState<PlanDay[]>([]);
   const [loading, setLoading] = useState(false);
   const [swapping, setSwapping] = useState<number | null>(null);
+  const [swapSalts, setSwapSalts] = useState<Record<number, number>>({});
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [generated, setGenerated] = useState(false);
@@ -122,23 +125,29 @@ function PlanInner() {
   }, [bodyBase, destination, post]);
 
   const swapDay = useCallback(
-    async (dayNumber: number) => {
-      setSwapping(dayNumber);
+    async (index: number) => {
+      const target = days[index];
+      if (!target) return;
+      setSwapping(index);
       setError(null);
+      const salt = (swapSalts[index] ?? 0) + 1;
       try {
-        const data = await post({ ...bodyBase, swapDay: dayNumber });
-        const fresh = toDays(data);
-        // Prefer a single returned day; else splice the matching day from a full plan.
-        const replacement =
-          fresh.length === 1
-            ? fresh[0]
-            : fresh.find((d) => d.day === dayNumber);
-        if (replacement) {
+        const data = await post({
+          ...bodyBase,
+          action: "swap",
+          dayIndex: index,
+          date: target.date ?? start,
+          salt,
+        });
+        // /api/plan swap returns a single { day } object.
+        const fresh = (data as { day?: PlanDay })?.day;
+        if (fresh && typeof fresh === "object") {
+          setSwapSalts((prev) => ({ ...prev, [index]: salt }));
           setDays((prev) =>
-            prev.map((d) => (d.day === dayNumber ? { ...replacement, day: dayNumber } : d)),
+            prev.map((d, i) =>
+              i === index ? { ...fresh, day: d.day ?? i + 1 } : d,
+            ),
           );
-        } else if (fresh.length > 0) {
-          setDays(fresh);
         }
         setSaveState("idle");
       } catch (err) {
@@ -147,13 +156,13 @@ function PlanInner() {
         setSwapping(null);
       }
     },
-    [bodyBase, post],
+    [bodyBase, days, post, start, swapSalts],
   );
 
   const save = useCallback(async () => {
     setSaveState("saving");
     try {
-      await post({ ...bodyBase, save: true, itinerary: days });
+      await post({ ...bodyBase, action: "save", itinerary: days });
       setSaveState("saved");
     } catch {
       setSaveState("error");
@@ -275,7 +284,7 @@ function PlanInner() {
               <article
                 key={d.day ?? i}
                 className={`card pl-day rise rise-${Math.min(i + 1, 4)} ${
-                  swapping === d.day ? "pl-day--swapping" : ""
+                  swapping === i ? "pl-day--swapping" : ""
                 }`}
               >
                 <div className="spread pl-day__head">
@@ -285,10 +294,10 @@ function PlanInner() {
                   </div>
                   <button
                     className="btn btn--ghost"
-                    onClick={() => d.day != null && swapDay(d.day)}
+                    onClick={() => swapDay(i)}
                     disabled={swapping !== null}
                   >
-                    {swapping === d.day ? "Swapping…" : "↻ Swap"}
+                    {swapping === i ? "Swapping…" : "↻ Swap"}
                   </button>
                 </div>
 

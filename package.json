@@ -42,8 +42,11 @@
       "public/**/*",
       "node_modules/**/*",
       "!**/*.map",
+      "!.next/cache",
       "!node_modules/.cache",
-      "!.next/cache"
+      "!node_modules/electron/**",
+      "!node_modules/electron-builder/**",
+      "!node_modules/app-builder-*/**"
     ],
     "extraResources": [
       { "from": "data/open-football-database/data", "to": "open-football-database/data" }
