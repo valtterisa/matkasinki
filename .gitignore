@@ -11,3 +11,4 @@ coverage/
 .data/
 data/open-football-database/.git/
 data/open-football-database/
+release/

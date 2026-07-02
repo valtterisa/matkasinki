@@ -7,7 +7,13 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const DB_ROOT = path.join(process.cwd(), "data", "open-football-database", "data");
+// Path resolves in this order so the same code works in dev, `next start`, and a
+// packaged Electron app (where the DB ships as an unpacked resource):
+//   1. FOOTBALL_DB_DIR env (set by the Electron main process to resourcesPath)
+//   2. cwd()/data/open-football-database/data (repo / dev)
+const DB_ROOT =
+  process.env.FOOTBALL_DB_DIR ||
+  path.join(process.cwd(), "data", "open-football-database", "data");
 
 export interface DbCountry {
   id: number;

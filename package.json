@@ -3,24 +3,56 @@
   "version": "0.1.0",
   "private": true,
   "description": "An AI travel planner (discover where's worth going, then plan it) wrapped in a football-manager game.",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "app": "next build && electron .",
+    "app:run": "electron .",
+    "dist": "next build && electron-builder"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@anthropic-ai/sdk": "^0.40.0",
     "resend": "^4.0.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
-    "typescript": "^5.6.0",
     "@types/node": "^22.0.0",
-    "@types/react": "^19.0.0"
+    "@types/react": "^19.0.0",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3",
+    "typescript": "^5.6.0"
+  },
+  "build": {
+    "appId": "com.airportcup.app",
+    "productName": "Airport Cup",
+    "asar": false,
+    "directories": { "output": "release" },
+    "files": [
+      "next.config.mjs",
+      "package.json",
+      "electron/**/*",
+      ".next/**/*",
+      "public/**/*",
+      "node_modules/**/*",
+      "!**/*.map",
+      "!node_modules/.cache",
+      "!.next/cache"
+    ],
+    "extraResources": [
+      { "from": "data/open-football-database/data", "to": "open-football-database/data" }
+    ],
+    "win": { "target": "nsis" },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
