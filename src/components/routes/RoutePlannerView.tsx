@@ -47,12 +47,7 @@ function RoutePlannerInner({ api = "/api/chat", layout = "page" }: RoutePlannerV
     <main className={`planner ${isChat ? "planner--chat chat-page" : "planner--page"}`}>
       <header className="planner__top">
         <h1 className="planner__title">Helsinki</h1>
-        {plan && (
-          <span className="planner__meta">
-            {plan.demo ? "demo · " : ""}
-            {plan.title}
-          </span>
-        )}
+        {plan && <span className="planner__meta">{plan.title}</span>}
       </header>
 
       <div className="planner__grid">

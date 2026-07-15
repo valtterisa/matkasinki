@@ -10,8 +10,8 @@ function uiStream(chunks: UIMessageChunk[]): ReadableStream<UIMessageChunk> {
   });
 }
 
-export function createDemoStreamResponse(plan: LocalRoutePlan, notice: string): Response {
-  const messageId = `demo-${plan.id}`;
+export function createSampleStreamResponse(plan: LocalRoutePlan, reply: string): Response {
+  const messageId = `plan-${plan.id}`;
   const textId = `${messageId}-text`;
   const toolCallId = `${messageId}-save-plan`;
 
@@ -20,7 +20,7 @@ export function createDemoStreamResponse(plan: LocalRoutePlan, notice: string): 
       { type: "start", messageId },
       { type: "start-step" },
       { type: "text-start", id: textId },
-      { type: "text-delta", id: textId, delta: notice },
+      { type: "text-delta", id: textId, delta: reply },
       { type: "text-end", id: textId },
       {
         type: "tool-input-available",
@@ -32,7 +32,7 @@ export function createDemoStreamResponse(plan: LocalRoutePlan, notice: string): 
       {
         type: "tool-output-available",
         toolCallId,
-        output: { ok: true, id: plan.id, plan: { ...plan, demo: true } },
+        output: { ok: true, id: plan.id, plan },
         providerExecuted: true,
       },
       { type: "finish-step" },
@@ -56,3 +56,5 @@ export function createErrorStreamResponse(message: string): Response {
     ]),
   });
 }
+
+export const createDemoStreamResponse = createSampleStreamResponse;

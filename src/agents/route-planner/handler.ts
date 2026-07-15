@@ -1,7 +1,7 @@
 import { createAgentUIStreamResponse } from "ai";
-import { demoHelsinkiRoute } from "@/features/local-routes";
+import { getSamplePlanForPrompt } from "@/features/local-routes";
 import { getRoute, listRoutes, saveRoute } from "@/lib/local-routes/store";
-import { createDemoStreamResponse, createErrorStreamResponse } from "./demo-stream";
+import { createSampleStreamResponse, createErrorStreamResponse } from "./demo-stream";
 import { isRoutePlannerAvailable, routePlannerAgent } from "./index";
 
 export async function handleRoutePlannerGet(req: Request): Promise<Response> {
@@ -39,7 +39,7 @@ function promptFromBody(body: {
       if (text) return text;
     }
   }
-  return "Demo route (no API key)";
+  return "";
 }
 
 export async function handleRoutePlannerPost(req: Request): Promise<Response> {
@@ -49,11 +49,6 @@ export async function handleRoutePlannerPost(req: Request): Promise<Response> {
     prompt?: string;
     message?: string;
   };
-
-  if (body.action === "demo") {
-    const plan = saveRoute(demoHelsinkiRoute(body.prompt));
-    return Response.json({ plan });
-  }
 
   let uiMessages = body.messages;
   if ((!uiMessages || !Array.isArray(uiMessages) || uiMessages.length === 0) && body.message) {
@@ -68,11 +63,10 @@ export async function handleRoutePlannerPost(req: Request): Promise<Response> {
   }
 
   if (!isRoutePlannerAvailable()) {
-    const plan = saveRoute(demoHelsinkiRoute(promptFromBody(body)));
-    return createDemoStreamResponse(
-      plan,
-      "ANTHROPIC_API_KEY is not set — loaded a demo Helsinki route instead. Add it to `.env` for live AI planning.",
-    );
+    const prompt = promptFromBody(body);
+    const { plan, reply } = getSamplePlanForPrompt(prompt);
+    const saved = saveRoute(plan);
+    return createSampleStreamResponse(saved, reply);
   }
 
   try {

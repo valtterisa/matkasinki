@@ -116,20 +116,59 @@
   border-bottom: var(--pl-border);
 }
 
-.planner-chat__empty {
+.planner-chat__welcome {
   margin: auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.planner-chat__welcome-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+
+.planner-chat__welcome-copy {
+  margin: 0;
   font-size: 0.8125rem;
   color: var(--fg-muted);
   line-height: 1.5;
-  max-width: 28ch;
-  padding: var(--space-4);
-  border: 1px dashed #556580;
-  border-radius: var(--radius-sm);
-  background: var(--bg);
+  max-width: 36ch;
 }
 
-.planner-chat__hint {
-  color: var(--accent-2);
+.planner-chat__suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: var(--space-1);
+}
+
+.planner-chat__suggestion {
+  border: var(--pl-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-align: left;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.planner-chat__suggestion:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--bg-overlay);
+}
+
+.planner-chat__suggestion:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .planner-chat__form {
@@ -181,22 +220,6 @@
 }
 
 .planner-chat__send:disabled { opacity: 0.35; cursor: default; }
-
-.planner-chat__demo {
-  flex: none;
-  border: var(--pl-border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--bg);
-  color: var(--fg-muted);
-  font-size: 0.75rem;
-  padding: 10px 12px;
-  cursor: pointer;
-}
-
-.planner-chat__demo:hover:not(:disabled) {
-  color: var(--fg);
-  border-color: var(--fg-muted);
-}
 
 .msg--user {
   align-self: flex-end;

@@ -3,6 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useEffect, useMemo, useState } from "react";
+import { CHAT_SUGGESTIONS } from "@/features/local-routes/chat-suggestions";
 import type { LocalRoutePlan } from "@/features/local-routes/types";
 import ChatMessageVisual from "@/components/routes/visuals/ChatMessageVisual";
 import { extractPlanFromMessages } from "@/lib/local-routes/extract-plan";
@@ -15,17 +16,7 @@ interface RouteChatProps {
 
 export default function RouteChat({ api = "/api/chat", onPlanChange, onStreamingChange }: RouteChatProps) {
   const [input, setInput] = useState("");
-  const [agentAvailable, setAgentAvailable] = useState<boolean | null>(null);
   const transport = useMemo(() => new DefaultChatTransport({ api }), [api]);
-
-  useEffect(() => {
-    void fetch(api)
-      .then((res) => res.json())
-      .then((data: { agentAvailable?: boolean }) => {
-        setAgentAvailable(data.agentAvailable ?? false);
-      })
-      .catch(() => setAgentAvailable(null));
-  }, [api]);
 
   const { messages, sendMessage, status, error } = useChat({
     transport,
@@ -46,22 +37,16 @@ export default function RouteChat({ api = "/api/chat", onPlanChange, onStreaming
     onStreamingChange?.(busy);
   }, [busy, onStreamingChange]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = input.trim();
-    if (!text || busy) return;
+  const submitText = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || busy) return;
     setInput("");
-    void sendMessage({ text });
+    void sendMessage({ text: trimmed });
   };
 
-  const loadDemo = async () => {
-    const res = await fetch(api, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "demo", prompt: "Demo Helsinki route" }),
-    });
-    const data = (await res.json()) as { plan?: LocalRoutePlan };
-    if (data.plan) onPlanChange(data.plan);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitText(input);
   };
 
   return (
@@ -69,17 +54,25 @@ export default function RouteChat({ api = "/api/chat", onPlanChange, onStreaming
       <div className="planner-chat__head">Chat</div>
       <div className="planner-chat__scroll">
         {messages.length === 0 && (
-          <p className="planner-chat__empty">
-            Describe a day in Helsinki — sights, museum, dinner.
-            {agentAvailable === false && (
-              <>
-                {" "}
-                <span className="planner-chat__hint">
-                  (No ANTHROPIC_API_KEY — chat will load a demo route.)
-                </span>
-              </>
-            )}
-          </p>
+          <div className="planner-chat__welcome">
+            <p className="planner-chat__welcome-title">Plan a Helsinki day</p>
+            <p className="planner-chat__welcome-copy">
+              Ask in plain language — or tap an example to get started.
+            </p>
+            <div className="planner-chat__suggestions">
+              {CHAT_SUGGESTIONS.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  className="planner-chat__suggestion"
+                  disabled={busy}
+                  onClick={() => submitText(s.prompt)}
+                >
+                  {s.prompt}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
         {messages.map((m) => (
           <ChatMessageVisual key={m.id} message={m} />
@@ -99,12 +92,9 @@ export default function RouteChat({ api = "/api/chat", onPlanChange, onStreaming
               handleSubmit(e);
             }
           }}
-          placeholder="Plan a day…"
+          placeholder="Plan a Helsinki trip with museums"
           disabled={busy}
         />
-        <button type="button" className="planner-chat__demo" onClick={() => void loadDemo()} disabled={busy}>
-          Demo
-        </button>
         <button type="submit" className="planner-chat__send" disabled={busy || !input.trim()}>
           Send
         </button>
