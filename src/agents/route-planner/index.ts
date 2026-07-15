@@ -1,7 +1,7 @@
 import { ToolLoopAgent } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { MODELS } from "@/agents/shared/llm";
-import { HELSINKI_SYSTEM_PROMPT } from "./system";
+import { useLiveRouteAgent } from "@/features/local-routes/chat-suggestions";
 import { routeTools } from "./tools";
 
 const modelId =
@@ -16,7 +16,7 @@ export const routePlannerAgent = new ToolLoopAgent({
 });
 
 export function isRoutePlannerAvailable(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
+  return useLiveRouteAgent();
 }
 
 export { routeTools } from "./tools";

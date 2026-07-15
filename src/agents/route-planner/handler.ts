@@ -1,8 +1,9 @@
 import { createAgentUIStreamResponse } from "ai";
 import { getSamplePlanForPrompt } from "@/features/local-routes";
-import { getRoute, listRoutes, saveRoute } from "@/lib/local-routes/store";
-import { createSampleStreamResponse, createErrorStreamResponse } from "./demo-stream";
-import { isRoutePlannerAvailable, routePlannerAgent } from "./index";
+import { isDemoMode, useLiveRouteAgent } from "@/features/local-routes/chat-suggestions";
+import { getRoute, listRoutes } from "@/lib/local-routes/store";
+import { createSampleStreamResponse } from "./demo-stream";
+import { routePlannerAgent } from "./index";
 
 export async function handleRoutePlannerGet(req: Request): Promise<Response> {
   const url = new URL(req.url);
@@ -14,7 +15,8 @@ export async function handleRoutePlannerGet(req: Request): Promise<Response> {
   }
   return Response.json({
     routes: listRoutes(),
-    agentAvailable: isRoutePlannerAvailable(),
+    demoMode: isDemoMode(),
+    agentAvailable: useLiveRouteAgent(),
   });
 }
 
@@ -42,10 +44,14 @@ function promptFromBody(body: {
   return "";
 }
 
+function sampleResponse(prompt: string): Response {
+  const { plan, reply } = getSamplePlanForPrompt(prompt);
+  return createSampleStreamResponse(plan, reply);
+}
+
 export async function handleRoutePlannerPost(req: Request): Promise<Response> {
   const body = (await req.json().catch(() => ({}))) as {
     messages?: unknown[];
-    action?: string;
     prompt?: string;
     message?: string;
   };
@@ -62,11 +68,10 @@ export async function handleRoutePlannerPost(req: Request): Promise<Response> {
     return Response.json({ error: "messages required" }, { status: 400 });
   }
 
-  if (!isRoutePlannerAvailable()) {
-    const prompt = promptFromBody(body);
-    const { plan, reply } = getSamplePlanForPrompt(prompt);
-    const saved = saveRoute(plan);
-    return createSampleStreamResponse(saved, reply);
+  const prompt = promptFromBody(body);
+
+  if (isDemoMode() || !useLiveRouteAgent()) {
+    return sampleResponse(prompt);
   }
 
   try {
@@ -74,8 +79,7 @@ export async function handleRoutePlannerPost(req: Request): Promise<Response> {
       agent: routePlannerAgent,
       uiMessages,
     });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Route planner failed";
-    return createErrorStreamResponse(message);
+  } catch {
+    return sampleResponse(prompt);
   }
 }

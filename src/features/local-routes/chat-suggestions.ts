@@ -20,3 +20,20 @@ export const CHAT_SUGGESTIONS = [
     prompt: "Plan a Suomenlinna ferry day from Helsinki",
   },
 ] as const;
+
+function normalize(text: string): string {
+  return text.trim().toLowerCase();
+}
+
+export function isPredefinedSuggestion(prompt: string): boolean {
+  const p = normalize(prompt);
+  return CHAT_SUGGESTIONS.some((s) => normalize(s.prompt) === p);
+}
+
+export function isDemoMode(): boolean {
+  return process.env.MATKASINKI_LIVE_AGENT !== "1";
+}
+
+export function useLiveRouteAgent(): boolean {
+  return !isDemoMode() && Boolean(process.env.ANTHROPIC_API_KEY);
+}
